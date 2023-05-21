@@ -3,13 +3,13 @@ Python game
 """
 import arcade
 
-#Constants
+# Constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SCREEN_TITLE = "(*˘︶˘*).｡.:*♡ Collector ♡*:.｡.(´｡• ᵕ •｡`)"
-CHARACTER_SCALING = 1
+CHARACTER_SCALING = 0.5
 TILE_SCALING = 0.5
-
+JUMP_MAX_HEIDHT = 80
 class MyGame(arcade.Window):
 
     def __init__(self):
@@ -17,11 +17,17 @@ class MyGame(arcade.Window):
 
         arcade.set_background_color(arcade.csscolor.CORAL)
 
+        self.camera = None
         self.wall_list = None
         self.player_list = None
         self.player_sprite = None
+        self.player_jump = False
+        self.jump_start = None
+        self.camera_max = 0
+
     def setup(self):
         # Sprite lists
+        self.camera = arcade.Camera(self.width, self.height)
         self.player_list = arcade.SpriteList()
         self.wall_list = arcade.SpriteList(use_spatial_hash=True)
 
@@ -40,7 +46,7 @@ class MyGame(arcade.Window):
             wall.center_y = 32
             self.wall_list.append(wall)
 
-        coordinate_list = [[290,160],[512,96],[256,96],[324,96],[768,96]]
+        coordinate_list = [[290, 160], [512, 96], [256, 96], [324, 96], [768, 96], [200, 830]]
 
         for coordinate in coordinate_list:
             wall = arcade.Sprite(":resources:images/tiles/boxCrate_double.png", TILE_SCALING)
@@ -55,19 +61,50 @@ class MyGame(arcade.Window):
 
     def on_draw(self):
         self.clear()
+        # Activate our Camera
+        self.camera.use()
         self.wall_list.draw()
         self.player_list.draw()
 
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.W:
-            self.player_sprite.center_y += 5
+            self.player_sprite.center_y += 30
+            self.player_jump = True
+            self.jump_start = self.player_sprite.center_y
         elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.player_sprite.center_x += 5
+            self.player_sprite.center_x += 30
         elif key == arcade.key.LEFT or key == arcade.key.A:
-            self.player_sprite.center_x -= 5
+            self.player_sprite.center_x -= 30
         elif key == arcade.key.DOWN or key == arcade.key.S:
-            self.player_sprite.center_y -= 5
+            self.player_sprite.center_y -= 30
+
+    def center_camera_to_player(self):
+        screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
+        screen_center_y = self.player_sprite.center_y - (self.camera.viewport_height / 2)
+
+        # Don't let camera travel past 0
+        if screen_center_x < 0:
+            screen_center_x = 0
+        if screen_center_y < 0:
+            screen_center_y = 0
+        player_centered = screen_center_x, screen_center_y
+
+        self.camera.move_to(player_centered)
+
+    def on_update(self, delta_time):
+        # Position the camera
+        self.center_camera_to_player()
+
+        if self.player_jump:
+            self.player_sprite.center_y += 2 #speed of elevating
+            if self.player_sprite.center_y >= self.jump_start + JUMP_MAX_HEIDHT:
+                self.player_jump = False
+        else:
+            self.player_sprite.center_y -= 2
+            
+
+
 def main():
     window = MyGame()
     window.setup()
