@@ -8,6 +8,7 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SCREEN_TITLE = "(*˘︶˘*).｡.:*♡ Collector ♡*:.｡.(´｡• ᵕ •｡`)"
 CHARACTER_SCALING = 0.5
+BACKGROUND_SCALING = 1
 TILE_SCALING = 0.5
 JUMP_MAX_HEIDHT = 80
 class MyGame(arcade.Window):
@@ -29,13 +30,23 @@ class MyGame(arcade.Window):
         # Sprite lists
         self.camera = arcade.Camera(self.width, self.height)
         self.player_list = arcade.SpriteList()
+        self.background_list = arcade.SpriteList()
         self.wall_list = arcade.SpriteList(use_spatial_hash=True)
+
+        # Background
+        image_sours_background = "sprites/Скетч карты.png"
+        self.background_sprite = arcade.Sprite(image_sours_background, BACKGROUND_SCALING)
+        self.background_sprite.center_x = 700
+        self.background_sprite.center_y = 420
+        self.background_list.append(self.background_sprite)
+
 
         # Player
         image_source = "sprites/Bunny_stand.png"
         self.player_sprite = arcade.Sprite(image_source, CHARACTER_SCALING)
         self.player_sprite.center_x = 80
         self.player_sprite.center_y = 64
+
         #Adding in player list for group (To Where -- What)
         self.player_list.append(self.player_sprite)
 
@@ -62,9 +73,11 @@ class MyGame(arcade.Window):
     def on_draw(self):
         self.clear()
         # Activate our Camera
+        self.background_list.draw()
         self.camera.use()
         self.wall_list.draw()
         self.player_list.draw()
+
 
 
     def on_key_press(self, key, modifiers):
@@ -102,7 +115,7 @@ class MyGame(arcade.Window):
                 self.player_jump = False
         else:
             self.player_sprite.center_y -= 2
-            
+
 
 
 def main():
